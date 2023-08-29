@@ -99,7 +99,7 @@ subroutine step(npart,nactive,t,dtsph,dtextforce,dtnew)
                           iamboundary,get_ntypes,npartoftypetot,&
                           dustfrac,dustevol,ddustevol,eos_vars,alphaind,nptmass,&
                           dustprop,ddustprop,dustproppred,pxyzu,dens,metrics,ics
- use options,        only:avdecayconst,alpha,ieos,alphamax
+ use options,        only:avdecayconst,alpha,ieos,alphamax,implicit_radiation_store_drad
  use deriv,          only:derivs
  use timestep,       only:dterr,bignumber,tolv
  use mpiutils,       only:reduceall_mpi
@@ -424,7 +424,7 @@ subroutine step(npart,nactive,t,dtsph,dtextforce,dtnew)
 !$omp shared(dustevol,ddustevol,use_dustfrac) &
 !$omp shared(dustprop,ddustprop,dustproppred) &
 !$omp shared(xyzmh_ptmass,vxyz_ptmass,fxyz_ptmass,nptmass,massoftype) &
-!$omp shared(dtsph,ieos,ufloor) &
+!$omp shared(dtsph,ieos,ufloor,implicit_radiation_store_drad) &
 !$omp shared(ibin,ibin_old,ibin_sts,twas,timei,use_sts,dtsph_next,ibin_wake,sts_it_n) &
 !$omp shared(ibin_dts,nbinmax) &
 !$omp private(dti,hdti) &
@@ -467,7 +467,7 @@ subroutine step(npart,nactive,t,dtsph,dtextforce,dtnew)
                 if (use_dustgrowth .and. itype==idust) dustprop(:,i) = dustprop(:,i) + dti*ddustprop(:,i)
                 if (itype==igas) then
                    if (mhd)          Bevol(:,i) = Bevol(:,i) + dti*dBevol(:,i)
-                   if (do_radiation) rad(:,i)   = rad(:,i)   + dti*drad(:,i)
+                   if (do_radiation .and. .not. implicit_radiation_store_drad) rad(:,i) = rad(:,i) + dti*drad(:,i)
                    if (use_dustfrac) then
                       dustevol(:,i) = dustevol(:,i) + dti*ddustevol(:,i)
                       if (use_dustgrowth) dustprop(:,i) = dustprop(:,i) + dti*ddustprop(:,i)
@@ -497,7 +497,7 @@ subroutine step(npart,nactive,t,dtsph,dtextforce,dtnew)
              if (itype==idust .and. use_dustgrowth) dustprop(:,i) = dustprop(:,i) + hdti*ddustprop(:,i)
              if (itype==igas) then
                 if (mhd)          Bevol(:,i) = Bevol(:,i) + hdti*dBevol(:,i)
-                if (do_radiation) rad(:,i)   = rad(:,i)   + hdti*drad(:,i)
+                if (do_radiation .and. .not. implicit_radiation_store_drad) rad(:,i) = rad(:,i) + hdti*drad(:,i)
                 if (use_dustfrac) then
                    dustevol(:,i) = dustevol(:,i) + hdti*ddustevol(:,i)
                    if (use_dustgrowth) dustprop(:,i) = dustprop(:,i) + hdti*ddustprop(:,i)

@@ -165,7 +165,7 @@ subroutine set_default_options
     iopacity_type = 0
     implicit_radiation = .false.
  endif
- implicit_radiation_store_drad = .false.
+ implicit_radiation_store_drad = .true.
 
  ! variable composition
  use_var_comp = .false.
